@@ -41,7 +41,7 @@ const Boid = (props: BoidProps) => {
 
   return (
     <group {...props} ref={group} position={position}>
-      <mesh scale={[scale, 2*scale, scale]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh scale={[scale, 2 * scale, scale]} rotation={[Math.PI / 2, 0, 0]}>
         <coneGeometry />
         <meshStandardMaterial color={"blue"} />
       </mesh>

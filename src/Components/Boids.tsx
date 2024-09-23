@@ -21,7 +21,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
       mouse.current.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
@@ -32,10 +32,10 @@ const Boids = ({ boundaries }: BoidsProps) => {
     {
       PAUSE: { value: false },
       NUM_BOIDS: { value: 100, min: 1, max: 100 },
-      SCALE: { value: 0.7, min: 0.1, max: 1 },
-      MIN_SPEED: { value: 0, min: 0, max: 10, step: 0.1 },
-      MAX_SPEED: { value: 2, min: 0, max: 10, step: 0.1 },
-      MAX_STEERING: { value: 0.5, min: 0, max: 1, step: 0.01 },
+      SCALE: { value: 0.6, min: 0.1, max: 1 },
+      MIN_SPEED: { value: 0.1, min: 0, max: 10, step: 0.1 },
+      MAX_SPEED: { value: 1.4, min: 0, max: 10, step: 0.1 },
+      MAX_STEERING: { value: 0.3, min: 0, max: 1, step: 0.01 },
     },
     { collapsed: true }
   );
@@ -55,9 +55,9 @@ const Boids = ({ boundaries }: BoidsProps) => {
     "Boundary Settings",
     {
       FREEDOM: { value: false },
-      AURA_X: { value: 2, min: 1, max: 10, step: 1 },
-      AURA_Y: { value: 2, min: 1, max: 10, step: 1 },
-      AURA_Z: { value: 2, min: 1, max: 10, step: 1 },
+      AURA_X: { value: 1, min: 1, max: 10, step: 1 },
+      AURA_Y: { value: 1, min: 1, max: 10, step: 1 },
+      AURA_Z: { value: 1, min: 1, max: 10, step: 1 },
     },
     { collapsed: true }
   );
@@ -66,7 +66,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
     "Wander",
     {
       WANDER_CIRCLE: false,
-      WANDER_RADIUS: { value: 3, min: 1, max: 10, step: 1 },
+      WANDER_RADIUS: { value: 2, min: 1, max: 10, step: 1 },
     },
     { collapsed: true }
   );
@@ -85,7 +85,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
     "Avoidance",
     {
       AVOID_CIRCLE: false,
-      AVOID_RADIUS: { value: 3, min: 0, max: 10 },
+      AVOID_RADIUS: { value: 2, min: 0, max: 10 },
       AVOID_STRENGTH: { value: 2, min: 0, max: 10, step: 1 },
     },
     { collapsed: true }
@@ -96,7 +96,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
     {
       COHESION_CIRCLE: false,
       COHESION_RADIUS: { value: 5, min: 0, max: 10 },
-      COHESION_STRENGTH: { value: 2, min: 0, max: 10, step: 1 },
+      COHESION_STRENGTH: { value: 3, min: 0, max: 10, step: 1 },
     },
     { collapsed: true }
   );
@@ -119,6 +119,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       ),
       velocity: new Vector3(0, 0, 0),
       wander: randFloat(0, Math.PI * 2),
+      horizWander: randFloat(0, Math.PI * 2),
     }));
   }, [NUM_BOIDS, boundaries, threeD]);
 
@@ -128,7 +129,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
 
       const limits = new Vector3();
       const wander = new Vector3();
-      const horizontalWander = new Vector3();
+      const horizWander = new Vector3();
       const alignment = new Vector3();
       const avoidance = new Vector3();
       const cohesion = new Vector3();
@@ -140,9 +141,9 @@ const Boids = ({ boundaries }: BoidsProps) => {
       wander.normalize();
       wander.multiplyScalar(WANDER_RADIUS);
 
-      horizontalWander.set(Math.cos(boid.wander), 0, Math.sin(boid.wander));
-      horizontalWander.normalize();
-      horizontalWander.multiplyScalar(WANDER_RADIUS);
+      horizWander.set(Math.cos(boid.horizWander), 0, Math.sin(boid.horizWander));
+      horizWander.normalize();
+      horizWander.multiplyScalar(WANDER_RADIUS);
 
       if (MOUSE_ATTRACTION) {
         const intersection = new Vector3();
@@ -167,7 +168,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       }
       if (Math.abs(boid.position.z) + AURA_Z > boundaries.z / 2) {
         limits.z = -boid.position.z;
-        boid.wander += Math.PI;
+        boid.horizWander += Math.PI;
       }
 
       limits.normalize();
@@ -208,7 +209,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       // APPLY FORCES
       steering.add(wander);
       if (!FREEDOM) steering.add(limits);
-      if (threeD) steering.add(horizontalWander);
+      if (threeD) steering.add(horizWander);
 
       if (ALIGNEMENT) {
         alignment.normalize();
@@ -231,9 +232,11 @@ const Boids = ({ boundaries }: BoidsProps) => {
       }
 
       steering.clampLength(0, MAX_STEERING * delta);
-      boid.velocity.add(steering);
-      boid.velocity.clampLength(MIN_SPEED / 10, MAX_SPEED / 10);
-      if (!PAUSE) boid.position.add(boid.velocity);
+      if (!PAUSE) {
+        boid.velocity.add(steering);
+        boid.velocity.clampLength(MIN_SPEED / 10, MAX_SPEED / 10);
+        boid.position.add(boid.velocity);
+      }
     }
   });
 

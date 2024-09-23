@@ -8,7 +8,7 @@ import { Canvas } from "@react-three/fiber";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Leva />
-    <Canvas camera={{position: [0, 0, -30]}}>
+    <Canvas camera={{position: [0, 0, -30], fov: 45}}>
       <Scene />
     </Canvas>
   </StrictMode>

@@ -9,8 +9,8 @@ const Scene = () => {
     "Boundaries",
     {
       debug: true,
-      x: { value: 40, min: 0, max: 48 },
-      y: { value: 40, min: 0, max: 27 },
+      x: { value: 48, min: 0, max: 38 },
+      y: { value: 27, min: 0, max: 27 },
       z: { value: 20, min: 0, max: 40 },
     },
     { collapsed: true }
