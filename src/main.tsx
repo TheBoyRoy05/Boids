@@ -1,12 +1,15 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './Components/App.tsx'
-import './index.css'
-import { Leva } from 'leva'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import Scene from "./Components/Scene.tsx";
+import "./index.css";
+import { Leva } from "leva";
+import { Canvas } from "@react-three/fiber";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Leva />
-    <App />
-  </StrictMode>,
-)
+    <Canvas camera={{position: [0, 0, -30]}}>
+      <Scene />
+    </Canvas>
+  </StrictMode>
+);
