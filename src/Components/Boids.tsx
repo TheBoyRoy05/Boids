@@ -49,10 +49,10 @@ const Boids = ({ boundaries }: BoidsProps) => {
       MAX_SPEED: { value: 1.2, min: 0, max: 10, step: 0.1 },
       MAX_STEERING: { value: 0.3, min: 0, max: 1, step: 0.01 },
       MODEL: {
-        value: "Glass Cone",
+        value: "Metal Cone",
         options: [
           "Cone",
-          "Glass Cone",
+          "Metal Cone",
           // "SpaceShip",
         ],
       },

@@ -2,7 +2,6 @@ import { useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { Group, Vector3 } from "three";
 import Arrow from "./Arrow";
-import { useControls } from "leva";
 // import { useGLTF } from "@react-three/drei";
 // import { SkeletonUtils } from "three-stdlib";
 
@@ -64,21 +63,6 @@ const Boid = (props: BoidProps) => {
     setRelSteering(boid.steering.clone().applyQuaternion(target.quaternion.invert()));
   });
 
-  const materialProps = useControls(
-    "Glass",
-    {
-      thickness: { value: 5, min: 0, max: 20 },
-      roughness: { value: 0, min: 0, max: 1, step: 0.1 },
-      clearcoat: { value: 1, min: 0, max: 1, step: 0.1 },
-      clearcoatRoughness: { value: 0, min: 0, max: 1, step: 0.1 },
-      transmission: { value: 1, min: 0.9, max: 1, step: 0.01 },
-      ior: { value: 1.25, min: 1, max: 2.3, step: 0.05 },
-      envMapIntensity: { value: 25, min: 0, max: 100, step: 1 },
-      color: "#000000",
-    },
-    { collapsed: true }
-  );
-
   return (
     <group {...props} ref={group} position={boid.position}>
       {
@@ -91,8 +75,8 @@ const Boid = (props: BoidProps) => {
       ) : */
         <mesh scale={[scale, 2 * scale, scale]} rotation={[Math.PI / 2, 0, 0]}>
           <coneGeometry />
-          {model == "Glass Cone" ? (
-            <meshPhysicalMaterial {...materialProps} />
+          {model == "Metal Cone" ? (
+            <meshPhysicalMaterial color={"black"} clearcoat={1} roughness={0} />
           ) : (
             <meshStandardMaterial color={"blue"} />
           )}
