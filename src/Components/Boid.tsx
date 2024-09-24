@@ -1,10 +1,10 @@
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Group, Vector3 } from "three";
 import Arrow from "./Arrow";
-import { useGLTF } from "@react-three/drei";
-import { SkeletonUtils } from "three-stdlib";
 import { useControls } from "leva";
+// import { useGLTF } from "@react-three/drei";
+// import { SkeletonUtils } from "three-stdlib";
 
 type BoidType = {
   position: Vector3;
@@ -51,8 +51,8 @@ const Boid = (props: BoidProps) => {
   const [relVelocity, setRelVelocity] = useState(new Vector3());
   const [relSteering, setRelSteering] = useState(new Vector3());
 
-  const { scene } = useGLTF(`/src/assets/spaceship.glb`);
-  const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  // const { scene } = useGLTF(`/src/assets/spaceship.glb`);
+  // const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
 
   useFrame(() => {
     const target = group.current.clone(false);
@@ -81,13 +81,14 @@ const Boid = (props: BoidProps) => {
 
   return (
     <group {...props} ref={group} position={boid.position}>
-      {model == "SpaceShip" ? (
+      {
+        /*model == "SpaceShip" ? (
         <primitive
           object={clone}
           scale={scale * 0.32}
           rotation={[0, Math.PI / 2, 0, Math.PI / 2]}
         />
-      ) : (
+      ) : */
         <mesh scale={[scale, 2 * scale, scale]} rotation={[Math.PI / 2, 0, 0]}>
           <coneGeometry />
           {model == "Glass Cone" ? (
@@ -96,7 +97,7 @@ const Boid = (props: BoidProps) => {
             <meshStandardMaterial color={"blue"} />
           )}
         </mesh>
-      )}
+      }
 
       {showVelocity && (
         <Arrow origin={new Vector3(0, 0, 0)} direction={relVelocity} color={"white"} />

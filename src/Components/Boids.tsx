@@ -53,7 +53,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
         options: [
         "Cone",
         "Glass Cone",
-        "SpaceShip",
+        // "SpaceShip",
       ] }
     },
     { collapsed: true }
