@@ -16,7 +16,7 @@ const Scene = () => {
       debug: false,
       x: { value: 48, min: 0, max: 38 },
       y: { value: 27, min: 0, max: 27 },
-      z: { value: 20, min: 0, max: 40 },
+      z: { value: 25, min: 0, max: 40 },
     },
     { collapsed: true }
   );
@@ -45,7 +45,7 @@ const Scene = () => {
 
   return (
     <>
-      <Leva hidden />
+      <Leva />
       <Canvas camera={{ position: [0, 0, 30], fov: 45 }}>
         <ambientLight intensity={0.7} />
         <Boids
@@ -85,7 +85,7 @@ const Scene = () => {
         {/* Post Processing */}
         <EffectComposer>
           {sun && <GodRays sun={sun} exposure={0.34} decay={0.89} blur />}
-          <Bloom luminanceThreshold={1.5} intensity={0.4} mipmapBlur />
+          <Bloom luminanceThreshold={1.5} intensity={1} mipmapBlur />
         </EffectComposer>
 
         <OrbitControls />
@@ -95,3 +95,5 @@ const Scene = () => {
 };
 
 export default Scene;
+
+// "SpaceShip" (https://skfb.ly/oFFXL) by JazOone is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).

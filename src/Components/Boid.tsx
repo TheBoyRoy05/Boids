@@ -1,7 +1,10 @@
 import { useFrame } from "@react-three/fiber";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Group, Vector3 } from "three";
 import Arrow from "./Arrow";
+import { useGLTF } from "@react-three/drei";
+import { SkeletonUtils } from "three-stdlib";
+import { useControls } from "leva";
 
 type BoidType = {
   position: Vector3;
@@ -25,6 +28,7 @@ interface BoidProps {
   cohesionRadius: number;
   showVelocity: boolean;
   showSteering: boolean;
+  model: string;
 }
 
 const Boid = (props: BoidProps) => {
@@ -41,10 +45,14 @@ const Boid = (props: BoidProps) => {
     cohesionRadius,
     showVelocity,
     showSteering,
+    model,
   } = props;
   const group = useRef<Group>(null!);
   const [relVelocity, setRelVelocity] = useState(new Vector3());
   const [relSteering, setRelSteering] = useState(new Vector3());
+
+  const { scene } = useGLTF(`/src/assets/spaceship.glb`);
+  const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
 
   useFrame(() => {
     const target = group.current.clone(false);
@@ -56,23 +64,52 @@ const Boid = (props: BoidProps) => {
     setRelSteering(boid.steering.clone().applyQuaternion(target.quaternion.invert()));
   });
 
+  const materialProps = useControls(
+    "Glass",
+    {
+      thickness: { value: 5, min: 0, max: 20 },
+      roughness: { value: 0, min: 0, max: 1, step: 0.1 },
+      clearcoat: { value: 1, min: 0, max: 1, step: 0.1 },
+      clearcoatRoughness: { value: 0, min: 0, max: 1, step: 0.1 },
+      transmission: { value: 1, min: 0.9, max: 1, step: 0.01 },
+      ior: { value: 1.25, min: 1, max: 2.3, step: 0.05 },
+      envMapIntensity: { value: 25, min: 0, max: 100, step: 1 },
+      color: "#000000",
+    },
+    { collapsed: true }
+  );
+
   return (
     <group {...props} ref={group} position={boid.position}>
-      <mesh scale={[scale, 2 * scale, scale]} rotation={[Math.PI / 2, 0, 0]}>
-        <coneGeometry />
-        <meshStandardMaterial color={"blue"} />
-      </mesh>
+      {model == "SpaceShip" ? (
+        <primitive
+          object={clone}
+          scale={scale * 0.32}
+          rotation={[0, Math.PI / 2, 0, Math.PI / 2]}
+        />
+      ) : (
+        <mesh scale={[scale, 2 * scale, scale]} rotation={[Math.PI / 2, 0, 0]}>
+          <coneGeometry />
+          {model == "Glass Cone" ? (
+            <meshPhysicalMaterial {...materialProps} />
+          ) : (
+            <meshStandardMaterial color={"blue"} />
+          )}
+        </mesh>
+      )}
 
       {showVelocity && (
         <Arrow origin={new Vector3(0, 0, 0)} direction={relVelocity} color={"white"} />
       )}
-      {showSteering && <Arrow
-        origin={showVelocity ? relVelocity: new Vector3(0, 0, 0.03)}
-        direction={relSteering}
-        length={1}
-        color={"red"}
-        thickness={0.05}
-      />}
+      {showSteering && (
+        <Arrow
+          origin={showVelocity ? relVelocity : new Vector3(0, 0, 0.03)}
+          direction={relSteering}
+          length={1}
+          color={"red"}
+          thickness={0.05}
+        />
+      )}
 
       <mesh visible={wanderCircle}>
         <sphereGeometry args={[wanderRadius, 32]} />

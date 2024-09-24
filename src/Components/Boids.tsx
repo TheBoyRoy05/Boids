@@ -39,15 +39,22 @@ const Boids = ({ boundaries }: BoidsProps) => {
     };
   }, []);
 
-  const { PAUSE, NUM_BOIDS, SCALE, MIN_SPEED, MAX_SPEED, MAX_STEERING } = useControls(
+  const { PAUSE, NUM_BOIDS, SCALE, MIN_SPEED, MAX_SPEED, MAX_STEERING, MODEL } = useControls(
     "General settings",
     {
       PAUSE: { value: false },
-      NUM_BOIDS: { value: 100, min: 1, max: 100 },
+      NUM_BOIDS: { value: 150, min: 1, max: 200 },
       SCALE: { value: 0.6, min: 0.1, max: 1 },
       MIN_SPEED: { value: 0.1, min: 0, max: 10, step: 0.1 },
       MAX_SPEED: { value: 1.2, min: 0, max: 10, step: 0.1 },
       MAX_STEERING: { value: 0.3, min: 0, max: 1, step: 0.01 },
+      MODEL: { 
+        value: "Glass Cone",
+        options: [
+        "Cone",
+        "Glass Cone",
+        "SpaceShip",
+      ] }
     },
     { collapsed: true }
   );
@@ -78,7 +85,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
     "Wander",
     {
       WANDER_CIRCLE: false,
-      WANDER_RADIUS: { value: 2, min: 1, max: 10, step: 1 },
+      WANDER_RADIUS: { value: 2, min: 0, max: 10, step: 1 },
     },
     { collapsed: true }
   );
@@ -281,6 +288,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
           cohesionRadius={COHESION_RADIUS}
           showVelocity={SHOW_VELOCITY}
           showSteering={SHOW_STEERING}
+          model={MODEL}
         />
       ))}
     </>
