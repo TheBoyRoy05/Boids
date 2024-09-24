@@ -11,10 +11,10 @@ const Scene = () => {
   const sun = useRef(null!);
 
   const boundaries = useControls(
-    "Boundaries",
+    "Boundary Settings",
     {
       debug: false,
-      x: { value: 48, min: 0, max: 38 },
+      x: { value: 48, min: 0, max: 48 },
       y: { value: 27, min: 0, max: 27 },
       z: { value: 25, min: 0, max: 40 },
     },

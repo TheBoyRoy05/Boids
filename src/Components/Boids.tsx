@@ -48,22 +48,23 @@ const Boids = ({ boundaries }: BoidsProps) => {
       MIN_SPEED: { value: 0.1, min: 0, max: 10, step: 0.1 },
       MAX_SPEED: { value: 1.2, min: 0, max: 10, step: 0.1 },
       MAX_STEERING: { value: 0.3, min: 0, max: 1, step: 0.01 },
-      MODEL: { 
+      MODEL: {
         value: "Glass Cone",
         options: [
-        "Cone",
-        "Glass Cone",
-        // "SpaceShip",
-      ] }
+          "Cone",
+          "Glass Cone",
+          // "SpaceShip",
+        ],
+      },
     },
     { collapsed: true }
   );
 
-  const { threeD, ALIGNEMENT, AVOIDANCE, COHESION } = useControls(
+  const { threeD, ALIGNMENT, AVOIDANCE, COHESION } = useControls(
     "Boid Rules",
     {
       threeD: { value: true },
-      ALIGNEMENT: { value: true },
+      ALIGNMENT: { value: true },
       AVOIDANCE: { value: true },
       COHESION: { value: true },
     },
@@ -73,10 +74,10 @@ const Boids = ({ boundaries }: BoidsProps) => {
   const { FREEDOM, AURA_X, AURA_Y, AURA_Z } = useControls(
     "Boundary Settings",
     {
-      FREEDOM: { value: false },
       AURA_X: { value: 1, min: 1, max: 10, step: 1 },
       AURA_Y: { value: 1, min: 1, max: 10, step: 1 },
       AURA_Z: { value: 2, min: 1, max: 10, step: 1 },
+      FREEDOM: { value: false },
     },
     { collapsed: true }
   );
@@ -120,10 +121,10 @@ const Boids = ({ boundaries }: BoidsProps) => {
     { collapsed: true }
   );
 
-  const { MOUSE_STRENGTH } = useControls(
-    "Mouse Attraction",
+  const { MOUSE_ATTRACTION, MOUSE_STRENGTH } = useControls(
+    "Mouse",
     {
-      MOUSE_ATTRACTION: true,
+      MOUSE_ATTRACTION: { value: "Click", options: ["Always", "Click", "Never"] },
       MOUSE_STRENGTH: { value: 1.3, min: 0, max: 3, step: 0.1 },
     },
     { collapsed: true }
@@ -176,7 +177,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       horizWander.normalize();
       horizWander.multiplyScalar(WANDER_RADIUS);
 
-      if (mouseDown) {
+      if (MOUSE_ATTRACTION == "Always" || (MOUSE_ATTRACTION == "Click" && mouseDown)) {
         const intersection = new Vector3();
         const plane = new Plane(new Vector3(0, 0, 1), 0);
         raycaster.current.setFromCamera(mouse.current, camera);
@@ -242,7 +243,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       if (!FREEDOM) boid.steering.add(limits);
       if (threeD) boid.steering.add(horizWander);
 
-      if (ALIGNEMENT) {
+      if (ALIGNMENT) {
         alignment.normalize();
         alignment.multiplyScalar(ALIGN_STRENGTH);
         boid.steering.add(alignment);
