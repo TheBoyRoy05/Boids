@@ -72,9 +72,9 @@ const Scene = () => {
         {/* SUN */}
         <mesh
           ref={sun}
-          position-y={responsiveBoundaries.y * 1.5}
+          position-y={responsiveBoundaries.y * 1.2}
           position-z={-40}
-          rotation-x={degToRad(40)}
+          rotation-x={degToRad(50)}
         >
           <circleGeometry args={[12, 64]} />
           <meshBasicMaterial depthWrite={false} color={"#e1ae4e"} transparent opacity={1} />
