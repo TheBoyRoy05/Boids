@@ -1,10 +1,19 @@
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Group, Vector3 } from "three";
+import Arrow from "./Arrow";
 
-interface BoidProps {
+type BoidType = {
   position: Vector3;
   velocity: Vector3;
+  alignment: Vector3;
+  avoidance: Vector3;
+  cohesion: Vector3;
+  steering: Vector3;
+};
+
+interface BoidProps {
+  boid: BoidType;
   scale: number;
   wanderCircle: boolean;
   wanderRadius: number;
@@ -14,12 +23,13 @@ interface BoidProps {
   avoidRadius: number;
   cohesionCircle: boolean;
   cohesionRadius: number;
+  showVelocity: boolean;
+  showSteering: boolean;
 }
 
 const Boid = (props: BoidProps) => {
   const {
-    position,
-    velocity,
+    boid,
     scale,
     wanderCircle,
     wanderRadius,
@@ -29,22 +39,40 @@ const Boid = (props: BoidProps) => {
     avoidRadius,
     cohesionCircle,
     cohesionRadius,
+    showVelocity,
+    showSteering,
   } = props;
   const group = useRef<Group>(null!);
+  const [relVelocity, setRelVelocity] = useState(new Vector3());
+  const [relSteering, setRelSteering] = useState(new Vector3());
 
   useFrame(() => {
     const target = group.current.clone(false);
-    target.lookAt(group.current.position.clone().add(velocity));
+    target.lookAt(group.current.position.clone().add(boid.velocity));
     group.current.quaternion.slerp(target.quaternion, 0.1);
-    group.current.position.copy(position);
+    group.current.position.copy(boid.position);
+
+    setRelVelocity(new Vector3(0, 0, 1).multiplyScalar(boid.velocity.length()));
+    setRelSteering(boid.steering.clone().applyQuaternion(target.quaternion.invert()));
   });
 
   return (
-    <group {...props} ref={group} position={position}>
+    <group {...props} ref={group} position={boid.position}>
       <mesh scale={[scale, 2 * scale, scale]} rotation={[Math.PI / 2, 0, 0]}>
         <coneGeometry />
         <meshStandardMaterial color={"blue"} />
       </mesh>
+
+      {showVelocity && (
+        <Arrow origin={new Vector3(0, 0, 0)} direction={relVelocity} color={"white"} />
+      )}
+      {showSteering && <Arrow
+        origin={showVelocity ? relVelocity: new Vector3(0, 0, 0.03)}
+        direction={relSteering}
+        length={1}
+        color={"red"}
+        thickness={0.05}
+      />}
 
       <mesh visible={wanderCircle}>
         <sphereGeometry args={[wanderRadius, 32]} />

@@ -1,7 +1,7 @@
 import { Plane, Raycaster, Vector2, Vector3 } from "three";
 import Boid from "./Boid";
 import { useControls } from "leva";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { randFloat } from "three/src/math/MathUtils.js";
 import { useFrame, useThree } from "@react-three/fiber";
 
@@ -17,14 +17,26 @@ const Boids = ({ boundaries }: BoidsProps) => {
   const { camera } = useThree();
   const raycaster = useRef(new Raycaster());
   const mouse = useRef(new Vector2());
+  const [mouseDown, setMouseDown] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
       mouse.current.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
     };
+
+    const handleMouseDown = () => setMouseDown(true);
+    const handleMouseUp = () => setMouseDown(false);
+
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
   }, []);
 
   const { PAUSE, NUM_BOIDS, SCALE, MIN_SPEED, MAX_SPEED, MAX_STEERING } = useControls(
@@ -34,7 +46,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       NUM_BOIDS: { value: 100, min: 1, max: 100 },
       SCALE: { value: 0.6, min: 0.1, max: 1 },
       MIN_SPEED: { value: 0.1, min: 0, max: 10, step: 0.1 },
-      MAX_SPEED: { value: 1.4, min: 0, max: 10, step: 0.1 },
+      MAX_SPEED: { value: 1.2, min: 0, max: 10, step: 0.1 },
       MAX_STEERING: { value: 0.3, min: 0, max: 1, step: 0.01 },
     },
     { collapsed: true }
@@ -57,7 +69,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       FREEDOM: { value: false },
       AURA_X: { value: 1, min: 1, max: 10, step: 1 },
       AURA_Y: { value: 1, min: 1, max: 10, step: 1 },
-      AURA_Z: { value: 1, min: 1, max: 10, step: 1 },
+      AURA_Z: { value: 2, min: 1, max: 10, step: 1 },
     },
     { collapsed: true }
   );
@@ -85,7 +97,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
     "Avoidance",
     {
       AVOID_CIRCLE: false,
-      AVOID_RADIUS: { value: 2, min: 0, max: 10 },
+      AVOID_RADIUS: { value: 2.5, min: 0, max: 10 },
       AVOID_STRENGTH: { value: 2, min: 0, max: 10, step: 1 },
     },
     { collapsed: true }
@@ -101,11 +113,20 @@ const Boids = ({ boundaries }: BoidsProps) => {
     { collapsed: true }
   );
 
-  const { MOUSE_ATTRACTION, MOUSE_STRENGTH } = useControls(
+  const { MOUSE_STRENGTH } = useControls(
     "Mouse Attraction",
     {
-      MOUSE_ATTRACTION: false,
-      MOUSE_STRENGTH: { value: 1, min: 0, max: 10, step: 1 },
+      MOUSE_ATTRACTION: true,
+      MOUSE_STRENGTH: { value: 1.3, min: 0, max: 3, step: 0.1 },
+    },
+    { collapsed: true }
+  );
+
+  const { SHOW_VELOCITY, SHOW_STEERING } = useControls(
+    "Arrows",
+    {
+      SHOW_VELOCITY: false,
+      SHOW_STEERING: false,
     },
     { collapsed: true }
   );
@@ -120,6 +141,10 @@ const Boids = ({ boundaries }: BoidsProps) => {
       velocity: new Vector3(0, 0, 0),
       wander: randFloat(0, Math.PI * 2),
       horizWander: randFloat(0, Math.PI * 2),
+      alignment: new Vector3(0, 0, 0),
+      avoidance: new Vector3(0, 0, 0),
+      cohesion: new Vector3(0, 0, 0),
+      steering: new Vector3(0, 0, 0),
     }));
   }, [NUM_BOIDS, boundaries, threeD]);
 
@@ -133,7 +158,6 @@ const Boids = ({ boundaries }: BoidsProps) => {
       const alignment = new Vector3();
       const avoidance = new Vector3();
       const cohesion = new Vector3();
-      const steering = new Vector3();
 
       // WANDER
       boid.wander += randFloat(-0.05, 0.05);
@@ -145,7 +169,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       horizWander.normalize();
       horizWander.multiplyScalar(WANDER_RADIUS);
 
-      if (MOUSE_ATTRACTION) {
+      if (mouseDown) {
         const intersection = new Vector3();
         const plane = new Plane(new Vector3(0, 0, 1), 0);
         raycaster.current.setFromCamera(mouse.current, camera);
@@ -154,7 +178,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
         const diff = intersection.sub(boid.position);
         diff.normalize();
         diff.multiplyScalar(MOUSE_STRENGTH);
-        steering.add(diff);
+        boid.steering.add(diff);
       }
 
       // LIMITS
@@ -207,20 +231,20 @@ const Boids = ({ boundaries }: BoidsProps) => {
       }
 
       // APPLY FORCES
-      steering.add(wander);
-      if (!FREEDOM) steering.add(limits);
-      if (threeD) steering.add(horizWander);
+      boid.steering.add(wander);
+      if (!FREEDOM) boid.steering.add(limits);
+      if (threeD) boid.steering.add(horizWander);
 
       if (ALIGNEMENT) {
         alignment.normalize();
         alignment.multiplyScalar(ALIGN_STRENGTH);
-        steering.add(alignment);
+        boid.steering.add(alignment);
       }
 
       if (AVOIDANCE) {
         avoidance.normalize();
         avoidance.multiplyScalar(AVOID_STRENGTH);
-        steering.add(avoidance);
+        boid.steering.add(avoidance);
       }
 
       if (COHESION && totalCohesion > 0) {
@@ -228,12 +252,12 @@ const Boids = ({ boundaries }: BoidsProps) => {
         cohesion.sub(boid.position);
         cohesion.normalize();
         cohesion.multiplyScalar(COHESION_STRENGTH);
-        steering.add(cohesion);
+        boid.steering.add(cohesion);
       }
 
-      steering.clampLength(0, MAX_STEERING * delta);
+      boid.steering.clampLength(0, MAX_STEERING * delta);
       if (!PAUSE) {
-        boid.velocity.add(steering);
+        boid.velocity.add(boid.steering);
         boid.velocity.clampLength(MIN_SPEED / 10, MAX_SPEED / 10);
         boid.position.add(boid.velocity);
       }
@@ -245,8 +269,7 @@ const Boids = ({ boundaries }: BoidsProps) => {
       {boids.map((boid, index) => (
         <Boid
           key={index}
-          position={boid.position}
-          velocity={boid.velocity}
+          boid={boid}
           scale={SCALE}
           wanderCircle={WANDER_CIRCLE}
           wanderRadius={WANDER_RADIUS}
@@ -256,6 +279,8 @@ const Boids = ({ boundaries }: BoidsProps) => {
           avoidRadius={AVOID_RADIUS}
           cohesionCircle={COHESION_CIRCLE}
           cohesionRadius={COHESION_RADIUS}
+          showVelocity={SHOW_VELOCITY}
+          showSteering={SHOW_STEERING}
         />
       ))}
     </>
