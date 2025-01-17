@@ -15,7 +15,7 @@ The Boids algorithm is based on three fundamental rules:
 
 When these rules are combined, boids form cohesive, dynamic groups that move fluidly through space. This simulation allows for interesting variations in behavior depending on how much weight is given to each rule.
 
-In this project, we've extended the algorithm with additional features like mouse attraction, steering forces, and 3D controls, allowing you to explore and tweak the behavior of the boids interactively using the Leva controls panel.
+In this project, I've extended the algorithm with additional features like mouse attraction, steering forces, and 3D controls, allowing you to explore and tweak the behavior of the boids interactively using the Leva controls panel.
 
 ## Features
 The `Boids` component includes the following features:
